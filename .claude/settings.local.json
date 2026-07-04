@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude-in-chrome__computer",
+      "mcp__claude-in-chrome__javascript_tool",
+      "mcp__claude-in-chrome__navigate",
+      "PowerShell(gh --version)",
+      "PowerShell(gh auth status)",
+      "PowerShell(git config --global credential.helper)",
+      "PowerShell(git config --global user.name)",
+      "PowerShell(git config --global user.email)",
+      "mcp__claude-in-chrome__tabs_context_mcp"
+    ]
+  }
+}
