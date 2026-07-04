@@ -1,6 +1,6 @@
 # 🧵 Supply Buddy
 
-**A FoodPanda-style supply chain platform for Bangladesh's Ready-Made Garments (RMG) industry.**
+**A FoodPanda-style supply chain platform for Bangladesh's Ready-Made Garments (RMG) industry made ENTIRELY using CLAUDE CODE.**
 
 Supply Buddy connects garment factories and buying houses with verified raw-material suppliers — fabrics, threads, and accessories — so sourcing raw materials feels as easy as ordering food delivery. Browse suppliers, compare materials by category, and book deliveries in advance, all from one dashboard.
 
