@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Star, MapPin, Clock, CheckCircle, Package, Calendar } from 'lucide-react';
+import { Star, MapPin, CheckCircle, Package } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Supplier, Material, MaterialCategory } from '../types';
 import MaterialCard from '../components/ui/MaterialCard';

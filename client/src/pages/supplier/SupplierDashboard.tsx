@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Package, CheckCircle, Clock, Truck, Plus, Edit3 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import type { Booking, Material, BookingStatus } from '../../types';
@@ -17,7 +16,7 @@ const STATUS_CONFIG: Record<BookingStatus, { label: string; next?: BookingStatus
 
 export default function SupplierDashboard() {
   const { profile } = useAuth();
-  const [supplierInfo, setSupplierInfo] = useState<any>(null);
+  const [, setSupplierInfo] = useState<any>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [activeTab, setActiveTab] = useState<'orders' | 'inventory'>('orders');

@@ -1,17 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Search, SlidersHorizontal, Star, Clock } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import type { Supplier, MaterialCategory } from '../types';
+import type { Supplier } from '../types';
 import SupplierCard from '../components/ui/SupplierCard';
-
-const CATEGORIES: { value: MaterialCategory | 'all'; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'fabric_natural', label: 'Natural Fabrics' },
-  { value: 'fabric_synthetic', label: 'Synthetic Fabrics' },
-  { value: 'fabric_woven', label: 'Woven Fabrics' },
-  { value: 'thread', label: 'Threads' },
-  { value: 'accessories', label: 'Accessories' },
-];
 
 const SORT_OPTIONS = [
   { value: 'rating', label: 'Top Rated' },

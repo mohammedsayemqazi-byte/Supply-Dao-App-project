@@ -3,12 +3,6 @@ import { Star, Clock, MapPin, CheckCircle } from 'lucide-react';
 import type { Supplier } from '../../types';
 import Badge from './Badge';
 
-const CATEGORY_COLORS: Record<string, string> = {
-  'Fabrics': 'bg-blue-500',
-  'Thread': 'bg-purple-500',
-  'Accessories': 'bg-orange-500',
-};
-
 interface SupplierCardProps {
   supplier: Supplier;
   deliveryTime?: string;
