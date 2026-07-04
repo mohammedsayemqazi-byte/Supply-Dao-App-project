@@ -1,6 +1,7 @@
 # 🧵 Supply Buddy
 
-**A FoodPanda-style supply chain platform for Bangladesh's Ready-Made Garments (RMG) industry made ENTIRELY using CLAUDE CODE.**
+## **A FoodPanda-style supply chain platform for Bangladesh's Ready-Made Garments (RMG) industry made ENTIRELY using CLAUDE CODE.** ##
+#### **The App: https://supply-dao-app-project.vercel.app/** ####
 
 Supply Buddy connects garment factories and buying houses with verified raw-material suppliers — fabrics, threads, and accessories — so sourcing raw materials feels as easy as ordering food delivery. Browse suppliers, compare materials by category, and book deliveries in advance, all from one dashboard.
 
@@ -149,7 +150,7 @@ cd server && npm run dev
 cd client && npm run dev
 ```
 
-The app will be available at **http://localhost:5173** (backend API on port `5000`).
+The app will be available at **[http://localhost:5173](https://supply-dao-app-project.vercel.app/)** (backend API on port `5000`).
 
 ---
 
