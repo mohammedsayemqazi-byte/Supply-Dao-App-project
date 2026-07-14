@@ -1,17 +1,38 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Heart, Globe, User, ChevronDown, MapPin } from 'lucide-react';
+import { ShoppingCart, Heart, Globe, User, ChevronDown, MapPin, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { DELIVERY_AREAS, useDeliveryArea } from '../../context/DeliveryAreaContext';
+import type { DeliveryArea } from '../../context/DeliveryAreaContext';
 
 export default function Navbar() {
   const { profile, signOut } = useAuth();
   const { items } = useCart();
+  const { area, setArea } = useDeliveryArea();
   const navigate = useNavigate();
+  const [areaMenuOpen, setAreaMenuOpen] = useState(false);
+  const areaMenuRef = useRef<HTMLDivElement>(null);
 
   async function handleSignOut() {
     await signOut();
     navigate('/login');
   }
+
+  function selectArea(next: DeliveryArea | null) {
+    setArea(next);
+    setAreaMenuOpen(false);
+  }
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (areaMenuRef.current && !areaMenuRef.current.contains(e.target as Node)) {
+        setAreaMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -25,11 +46,38 @@ export default function Navbar() {
         </Link>
 
         {/* Location */}
-        <button className="flex items-center gap-1 text-sm text-gray-600 hover:text-[#e2006a] transition-colors">
-          <MapPin size={14} className="text-[#e2006a]" />
-          <span className="hidden md:block">Select delivery area</span>
-          <ChevronDown size={14} />
-        </button>
+        <div className="relative" ref={areaMenuRef}>
+          <button
+            onClick={() => setAreaMenuOpen(o => !o)}
+            className="flex items-center gap-1 text-sm text-gray-600 hover:text-[#e2006a] transition-colors"
+          >
+            <MapPin size={14} className="text-[#e2006a]" />
+            <span className="hidden md:block">{area ?? 'Select delivery area'}</span>
+            <ChevronDown size={14} />
+          </button>
+          {areaMenuOpen && (
+            <div className="absolute left-0 top-8 bg-white shadow-lg rounded-lg py-2 w-48 border border-gray-100 z-50">
+              <button
+                onClick={() => selectArea(null)}
+                className="flex items-center justify-between w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                All Areas
+                {area === null && <Check size={14} className="text-[#e2006a]" />}
+              </button>
+              <hr className="my-1" />
+              {DELIVERY_AREAS.map(a => (
+                <button
+                  key={a}
+                  onClick={() => selectArea(a)}
+                  className="flex items-center justify-between w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  {a}
+                  {area === a && <Check size={14} className="text-[#e2006a]" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Nav tabs */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">

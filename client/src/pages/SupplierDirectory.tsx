@@ -3,6 +3,7 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Supplier } from '../types';
 import SupplierCard from '../components/ui/SupplierCard';
+import { useDeliveryArea } from '../context/DeliveryAreaContext';
 
 const SORT_OPTIONS = [
   { value: 'rating', label: 'Top Rated' },
@@ -11,6 +12,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function SupplierDirectory() {
+  const { area } = useDeliveryArea();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -21,7 +23,7 @@ export default function SupplierDirectory() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      let q = supabase.from('suppliers').select('*');
+      let q = supabase.from('suppliers').select('*, materials(name, category)');
       if (onlyVerified) q = q.eq('is_verified', true);
       if (sort === 'rating') q = q.order('rating', { ascending: false });
       else if (sort === 'name') q = q.order('company_name', { ascending: true });
@@ -32,10 +34,15 @@ export default function SupplierDirectory() {
     load();
   }, [sort, onlyVerified]);
 
-  const filtered = suppliers.filter(s =>
-    s.company_name.toLowerCase().includes(search.toLowerCase()) ||
-    s.location.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = suppliers.filter(s => {
+    const q = search.toLowerCase();
+    const matchesSearch = !q ||
+      s.company_name.toLowerCase().includes(q) ||
+      s.location.toLowerCase().includes(q) ||
+      (s.materials?.some(m => m.name.toLowerCase().includes(q)) ?? false);
+    const matchesArea = !area || s.location.toLowerCase().includes(area.toLowerCase());
+    return matchesSearch && matchesArea;
+  });
 
   return (
     <div className="flex gap-6">
@@ -97,14 +104,14 @@ export default function SupplierDirectory() {
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search suppliers by name or location..."
+            placeholder="Search suppliers, materials, or location..."
             className="flex-1 outline-none text-sm text-gray-700"
           />
         </div>
 
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-gray-900">
-            {search ? `Results for "${search}"` : 'All Suppliers'}
+            {search ? `Results for "${search}"` : area ? `Suppliers in ${area}` : 'All Suppliers'}
           </h2>
           <span className="text-sm text-gray-400">{filtered.length} found</span>
         </div>
@@ -118,7 +125,9 @@ export default function SupplierDirectory() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
             <p className="text-4xl mb-2">🔍</p>
-            <p className="font-medium">No suppliers match your search</p>
+            <p className="font-medium">
+              {search ? 'No suppliers match your search' : `No suppliers found in ${area}`}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

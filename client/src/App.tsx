@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { DeliveryAreaProvider } from './context/DeliveryAreaContext';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
@@ -50,7 +51,9 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <AppRoutes />
+          <DeliveryAreaProvider>
+            <AppRoutes />
+          </DeliveryAreaProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import type { Supplier } from '../types';
 import SupplierCard from '../components/ui/SupplierCard';
 import { useAuth } from '../context/AuthContext';
+import { useDeliveryArea } from '../context/DeliveryAreaContext';
 
 const MATERIAL_FILTERS = [
   { label: 'Cotton', emoji: '🌿' },
@@ -18,6 +19,7 @@ const MATERIAL_FILTERS = [
 
 export default function Home() {
   const { profile } = useAuth();
+  const { area } = useDeliveryArea();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [featured, setFeatured] = useState<Supplier[]>([]);
   const [search, setSearch] = useState('');
@@ -28,7 +30,7 @@ export default function Home() {
       setLoading(true);
       const { data } = await supabase
         .from('suppliers')
-        .select('*, profile:profiles(full_name, email)')
+        .select('*, profile:profiles(full_name, email), materials(name, category)')
         .eq('is_verified', true)
         .order('rating', { ascending: false });
       if (data) {
@@ -40,10 +42,15 @@ export default function Home() {
     fetchSuppliers();
   }, []);
 
-  const filtered = suppliers.filter(s =>
-    s.company_name.toLowerCase().includes(search.toLowerCase()) ||
-    s.location.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = suppliers.filter(s => {
+    const q = search.toLowerCase();
+    const matchesSearch = !q ||
+      s.company_name.toLowerCase().includes(q) ||
+      s.location.toLowerCase().includes(q) ||
+      (s.materials?.some(m => m.name.toLowerCase().includes(q)) ?? false);
+    const matchesArea = !area || s.location.toLowerCase().includes(area.toLowerCase());
+    return matchesSearch && matchesArea;
+  });
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -111,7 +118,7 @@ export default function Home() {
       </div>
 
       {/* Featured Suppliers */}
-      {featured.length > 0 && !search && (
+      {featured.length > 0 && !search && !area && (
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-bold text-gray-900 text-lg">Top Rated Suppliers</h2>
@@ -129,7 +136,7 @@ export default function Home() {
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-bold text-gray-900 text-lg">
-            {search ? `Results for "${search}"` : 'All Suppliers'}
+            {search ? `Results for "${search}"` : area ? `Suppliers in ${area}` : 'All Suppliers'}
           </h2>
           <span className="text-sm text-gray-400">{filtered.length} suppliers</span>
         </div>
@@ -143,8 +150,16 @@ export default function Home() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-4xl mb-2">🔍</p>
-            <p className="font-medium">No suppliers found for "{search}"</p>
-            <button onClick={() => setSearch('')} className="mt-2 text-sm text-[#e2006a] hover:underline">Clear search</button>
+            <p className="font-medium">
+              {search
+                ? `No suppliers found for "${search}"`
+                : area
+                  ? `No suppliers found in ${area}`
+                  : 'No suppliers found'}
+            </p>
+            {search && (
+              <button onClick={() => setSearch('')} className="mt-2 text-sm text-[#e2006a] hover:underline">Clear search</button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

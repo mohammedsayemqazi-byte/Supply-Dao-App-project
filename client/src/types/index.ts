@@ -26,6 +26,7 @@ export interface Supplier {
   cover_url: string | null;
   created_at: string;
   profile?: Profile;
+  materials?: { name: string; category: MaterialCategory }[];
 }
 
 export type MaterialCategory =
