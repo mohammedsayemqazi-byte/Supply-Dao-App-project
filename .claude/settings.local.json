@@ -9,7 +9,14 @@
       "PowerShell(git config --global credential.helper)",
       "PowerShell(git config --global user.name)",
       "PowerShell(git config --global user.email)",
-      "mcp__claude-in-chrome__tabs_context_mcp"
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(curl -s -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\" https://supply-buddy-api.onrender.com/api/health)",
+      "Bash(npm run *)"
     ]
   }
 }
