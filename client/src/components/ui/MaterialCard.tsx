@@ -2,15 +2,8 @@ import { useState } from 'react';
 import { Plus, Minus, ShoppingCart } from 'lucide-react';
 import type { Material } from '../../types';
 import { useCart } from '../../context/CartContext';
+import { useLanguage } from '../../context/LanguageContext';
 import Badge from './Badge';
-
-const CATEGORY_LABELS: Record<string, string> = {
-  fabric_natural: 'Natural Fabric',
-  fabric_synthetic: 'Synthetic Fabric',
-  fabric_woven: 'Woven Fabric',
-  thread: 'Thread',
-  accessories: 'Accessories',
-};
 
 const CATEGORY_COLORS: Record<string, 'blue' | 'pink' | 'green' | 'yellow' | 'gray'> = {
   fabric_natural: 'green',
@@ -26,6 +19,7 @@ interface MaterialCardProps {
 
 export default function MaterialCard({ material }: MaterialCardProps) {
   const { addItem } = useCart();
+  const { t } = useLanguage();
   const [qty, setQty] = useState(material.minimum_order_qty);
   const [added, setAdded] = useState(false);
 
@@ -50,7 +44,7 @@ export default function MaterialCard({ material }: MaterialCardProps) {
         )}
         {!inStock && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-            <span className="text-sm font-semibold text-gray-500">Out of Stock</span>
+            <span className="text-sm font-semibold text-gray-500">{t('material.outOfStock')}</span>
           </div>
         )}
       </div>
@@ -58,7 +52,7 @@ export default function MaterialCard({ material }: MaterialCardProps) {
       {/* Content */}
       <div className="p-3 flex flex-col flex-1 gap-2">
         <div>
-          <Badge label={CATEGORY_LABELS[material.category]} color={CATEGORY_COLORS[material.category]} />
+          <Badge label={t(`material.category.${material.category}`)} color={CATEGORY_COLORS[material.category]} />
           <h4 className="font-semibold text-gray-900 text-sm mt-1">{material.name}</h4>
           {material.description && (
             <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{material.description}</p>
@@ -66,9 +60,9 @@ export default function MaterialCard({ material }: MaterialCardProps) {
         </div>
 
         <div className="text-xs text-gray-500 space-y-0.5">
-          <div>Lead time: <span className="font-medium text-gray-700">{material.lead_time_days} days</span></div>
-          <div>MOQ: <span className="font-medium text-gray-700">{material.minimum_order_qty} {material.unit}</span></div>
-          <div>Stock: <span className="font-medium text-gray-700">{material.stock_available} {material.unit}</span></div>
+          <div>{t('material.leadTime', { days: material.lead_time_days })}</div>
+          <div>{t('material.moq', { qty: material.minimum_order_qty, unit: material.unit })}</div>
+          <div>{t('material.stock', { qty: material.stock_available, unit: material.unit })}</div>
         </div>
 
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
@@ -101,7 +95,7 @@ export default function MaterialCard({ material }: MaterialCardProps) {
                 }`}
               >
                 <ShoppingCart size={11} />
-                {added ? 'Added!' : 'Add'}
+                {added ? t('material.added') : t('material.add')}
               </button>
             </div>
           )}

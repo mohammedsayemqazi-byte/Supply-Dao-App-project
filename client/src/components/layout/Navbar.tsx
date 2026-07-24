@@ -5,14 +5,24 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { DELIVERY_AREAS, useDeliveryArea } from '../../context/DeliveryAreaContext';
 import type { DeliveryArea } from '../../context/DeliveryAreaContext';
+import { useLanguage } from '../../context/LanguageContext';
+import type { Language } from '../../context/LanguageContext';
+
+const LANGUAGE_OPTIONS: { value: Language; label: string }[] = [
+  { value: 'en', label: 'English' },
+  { value: 'bn', label: 'বাংলা' },
+];
 
 export default function Navbar() {
   const { profile, signOut } = useAuth();
   const { items } = useCart();
   const { area, setArea } = useDeliveryArea();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [areaMenuOpen, setAreaMenuOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const areaMenuRef = useRef<HTMLDivElement>(null);
+  const langMenuRef = useRef<HTMLDivElement>(null);
 
   async function handleSignOut() {
     await signOut();
@@ -24,10 +34,18 @@ export default function Navbar() {
     setAreaMenuOpen(false);
   }
 
+  function selectLanguage(next: Language) {
+    setLanguage(next);
+    setLangMenuOpen(false);
+  }
+
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (areaMenuRef.current && !areaMenuRef.current.contains(e.target as Node)) {
         setAreaMenuOpen(false);
+      }
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setLangMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', onClickOutside);
@@ -52,7 +70,7 @@ export default function Navbar() {
             className="flex items-center gap-1 text-sm text-gray-600 hover:text-[#e2006a] transition-colors"
           >
             <MapPin size={14} className="text-[#e2006a]" />
-            <span className="hidden md:block">{area ?? 'Select delivery area'}</span>
+            <span className="hidden md:block">{area ? t(`area.${area}`) : t('nav.selectDeliveryArea')}</span>
             <ChevronDown size={14} />
           </button>
           {areaMenuOpen && (
@@ -61,7 +79,7 @@ export default function Navbar() {
                 onClick={() => selectArea(null)}
                 className="flex items-center justify-between w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
               >
-                All Areas
+                {t('nav.allAreas')}
                 {area === null && <Check size={14} className="text-[#e2006a]" />}
               </button>
               <hr className="my-1" />
@@ -71,7 +89,7 @@ export default function Navbar() {
                   onClick={() => selectArea(a)}
                   className="flex items-center justify-between w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                 >
-                  {a}
+                  {t(`area.${a}`)}
                   {area === a && <Check size={14} className="text-[#e2006a]" />}
                 </button>
               ))}
@@ -81,23 +99,42 @@ export default function Navbar() {
 
         {/* Nav tabs */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
-          <Link to="/suppliers" className="hover:text-[#e2006a] transition-colors">Suppliers</Link>
-          <Link to="/materials" className="hover:text-[#e2006a] transition-colors">Materials</Link>
+          <Link to="/suppliers" className="hover:text-[#e2006a] transition-colors">{t('nav.suppliers')}</Link>
+          <Link to="/materials" className="hover:text-[#e2006a] transition-colors">{t('nav.materials')}</Link>
           {profile?.role === 'supplier' && (
-            <Link to="/supplier/dashboard" className="hover:text-[#e2006a] transition-colors">Dashboard</Link>
+            <Link to="/supplier/dashboard" className="hover:text-[#e2006a] transition-colors">{t('nav.dashboard')}</Link>
           )}
           {profile?.role === 'admin' && (
-            <Link to="/admin" className="hover:text-[#e2006a] transition-colors">Admin</Link>
+            <Link to="/admin" className="hover:text-[#e2006a] transition-colors">{t('nav.admin')}</Link>
           )}
         </nav>
 
         {/* Right actions */}
         <div className="flex items-center gap-3">
-          <button className="hidden md:flex items-center gap-1 text-sm text-gray-600">
-            <Globe size={16} />
-            <span>EN</span>
-            <ChevronDown size={14} />
-          </button>
+          <div className="relative hidden md:block" ref={langMenuRef}>
+            <button
+              onClick={() => setLangMenuOpen(o => !o)}
+              className="flex items-center gap-1 text-sm text-gray-600 hover:text-[#e2006a] transition-colors"
+            >
+              <Globe size={16} />
+              <span>{language === 'bn' ? 'বাংলা' : 'EN'}</span>
+              <ChevronDown size={14} />
+            </button>
+            {langMenuOpen && (
+              <div className="absolute right-0 top-8 bg-white shadow-lg rounded-lg py-2 w-32 border border-gray-100 z-50">
+                {LANGUAGE_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => selectLanguage(opt.value)}
+                    className="flex items-center justify-between w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    {opt.label}
+                    {language === opt.value && <Check size={14} className="text-[#e2006a]" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {profile ? (
             <>
@@ -119,20 +156,20 @@ export default function Navbar() {
                   <ChevronDown size={14} />
                 </button>
                 <div className="absolute right-0 top-8 bg-white shadow-lg rounded-lg py-2 w-44 hidden group-hover:block border border-gray-100">
-                  <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Profile</Link>
-                  <Link to="/bookings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Bookings</Link>
+                  <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">{t('nav.myProfile')}</Link>
+                  <Link to="/bookings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">{t('nav.myBookings')}</Link>
                   <hr className="my-1" />
                   <button onClick={handleSignOut} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50">
-                    Sign Out
+                    {t('nav.signOut')}
                   </button>
                 </div>
               </div>
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-[#e2006a]">Login</Link>
+              <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-[#e2006a]">{t('nav.login')}</Link>
               <Link to="/signup" className="bg-[#e2006a] text-white text-sm font-medium px-4 py-2 rounded-full hover:bg-[#b8005a] transition-colors">
-                Sign Up
+                {t('nav.signUp')}
               </Link>
             </>
           )}

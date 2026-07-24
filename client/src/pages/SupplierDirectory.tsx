@@ -4,15 +4,17 @@ import { supabase } from '../lib/supabase';
 import type { Supplier } from '../types';
 import SupplierCard from '../components/ui/SupplierCard';
 import { useDeliveryArea } from '../context/DeliveryAreaContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const SORT_OPTIONS = [
-  { value: 'rating', label: 'Top Rated' },
-  { value: 'fastest', label: 'Fastest Delivery' },
-  { value: 'name', label: 'Name A–Z' },
-];
+  { value: 'rating', key: 'rating' },
+  { value: 'fastest', key: 'fastest' },
+  { value: 'name', key: 'name' },
+] as const;
 
 export default function SupplierDirectory() {
   const { area } = useDeliveryArea();
+  const { t } = useLanguage();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -44,6 +46,8 @@ export default function SupplierDirectory() {
     return matchesSearch && matchesArea;
   });
 
+  const areaLabel = area ? t(`area.${area}`) : null;
+
   return (
     <div className="flex gap-6">
       {/* Sidebar Filters */}
@@ -51,11 +55,11 @@ export default function SupplierDirectory() {
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 sticky top-24">
           <div className="flex items-center gap-2 mb-4">
             <SlidersHorizontal size={15} className="text-[#e2006a]" />
-            <h3 className="font-semibold text-sm text-gray-900">Filters</h3>
+            <h3 className="font-semibold text-sm text-gray-900">{t('directory.filters')}</h3>
           </div>
 
           <div className="mb-4">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Sort by</p>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{t('directory.sortBy')}</p>
             {SORT_OPTIONS.map(o => (
               <label key={o.value} className="flex items-center gap-2 py-1.5 cursor-pointer">
                 <input
@@ -66,13 +70,13 @@ export default function SupplierDirectory() {
                   onChange={() => setSort(o.value)}
                   className="accent-[#e2006a]"
                 />
-                <span className="text-sm text-gray-700">{o.label}</span>
+                <span className="text-sm text-gray-700">{t(`directory.sort.${o.key}`)}</span>
               </label>
             ))}
           </div>
 
           <div className="mb-4">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Options</p>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{t('directory.options')}</p>
             <label className="flex items-center gap-2 py-1.5 cursor-pointer">
               <input
                 type="checkbox"
@@ -80,7 +84,7 @@ export default function SupplierDirectory() {
                 onChange={e => setOnlyVerified(e.target.checked)}
                 className="accent-[#e2006a]"
               />
-              <span className="text-sm text-gray-700">Verified only</span>
+              <span className="text-sm text-gray-700">{t('directory.verifiedOnly')}</span>
             </label>
             <label className="flex items-center gap-2 py-1.5 cursor-pointer">
               <input
@@ -89,7 +93,7 @@ export default function SupplierDirectory() {
                 onChange={e => setOnlyAvailable(e.target.checked)}
                 className="accent-[#e2006a]"
               />
-              <span className="text-sm text-gray-700">Available today</span>
+              <span className="text-sm text-gray-700">{t('directory.availableToday')}</span>
             </label>
           </div>
         </div>
@@ -104,16 +108,20 @@ export default function SupplierDirectory() {
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search suppliers, materials, or location..."
+            placeholder={t('directory.searchPlaceholder')}
             className="flex-1 outline-none text-sm text-gray-700"
           />
         </div>
 
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-gray-900">
-            {search ? `Results for "${search}"` : area ? `Suppliers in ${area}` : 'All Suppliers'}
+            {search
+              ? t('directory.resultsFor', { query: search })
+              : areaLabel
+                ? t('directory.suppliersIn', { area: areaLabel })
+                : t('directory.allSuppliers')}
           </h2>
-          <span className="text-sm text-gray-400">{filtered.length} found</span>
+          <span className="text-sm text-gray-400">{t('directory.found', { count: filtered.length })}</span>
         </div>
 
         {loading ? (
@@ -126,7 +134,7 @@ export default function SupplierDirectory() {
           <div className="text-center py-20 text-gray-400">
             <p className="text-4xl mb-2">🔍</p>
             <p className="font-medium">
-              {search ? 'No suppliers match your search' : `No suppliers found in ${area}`}
+              {search ? t('directory.noMatch') : t('directory.noSuppliersIn', { area: areaLabel ?? '' })}
             </p>
           </div>
         ) : (

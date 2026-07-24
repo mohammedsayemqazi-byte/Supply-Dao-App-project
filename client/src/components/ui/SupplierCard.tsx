@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Star, Clock, MapPin, CheckCircle } from 'lucide-react';
 import type { Supplier } from '../../types';
+import { useLanguage } from '../../context/LanguageContext';
 import Badge from './Badge';
 
 interface SupplierCardProps {
@@ -8,7 +9,9 @@ interface SupplierCardProps {
   deliveryTime?: string;
 }
 
-export default function SupplierCard({ supplier, deliveryTime = '2–5 days' }: SupplierCardProps) {
+export default function SupplierCard({ supplier, deliveryTime }: SupplierCardProps) {
+  const { t } = useLanguage();
+  const shownDeliveryTime = deliveryTime ?? t('supplierCard.defaultDeliveryTime');
   return (
     <Link to={`/suppliers/${supplier.id}`} className="block group">
       <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100">
@@ -46,7 +49,7 @@ export default function SupplierCard({ supplier, deliveryTime = '2–5 days' }: 
           <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500">
             <span className="flex items-center gap-1">
               <Clock size={11} />
-              {deliveryTime}
+              {shownDeliveryTime}
             </span>
             <span className="flex items-center gap-1">
               <MapPin size={11} />

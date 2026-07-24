@@ -3,11 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, Calendar, MapPin, FileText } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../lib/api';
 
 export default function Cart() {
   const { items, removeItem, updateQty, clearCart, total, supplierId } = useCart();
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [deliveryDate, setDeliveryDate] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState(profile?.address ?? '');
@@ -20,7 +22,7 @@ export default function Cart() {
   const minDateStr = minDate.toISOString().split('T')[0];
 
   async function handleBooking() {
-    if (!deliveryDate || !deliveryAddress) { setError('Please fill in delivery date and address.'); return; }
+    if (!deliveryDate || !deliveryAddress) { setError(t('cart.errorFillFields')); return; }
     setError('');
     setLoading(true);
 
@@ -39,7 +41,7 @@ export default function Cart() {
       clearCart();
       navigate(`/bookings/${data.id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message ?? 'Failed to place booking. Try again.');
+      setError(err.response?.data?.message ?? t('cart.errorFailed'));
     } finally {
       setLoading(false);
     }
@@ -49,10 +51,10 @@ export default function Cart() {
     return (
       <div className="text-center py-24">
         <p className="text-5xl mb-3">🛒</p>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Your cart is empty</h2>
-        <p className="text-gray-500 text-sm mb-5">Browse suppliers and add materials to get started</p>
+        <h2 className="text-xl font-bold text-gray-900 mb-1">{t('cart.emptyTitle')}</h2>
+        <p className="text-gray-500 text-sm mb-5">{t('cart.emptySubtitle')}</p>
         <Link to="/suppliers" className="bg-[#e2006a] text-white px-6 py-2.5 rounded-full font-semibold hover:bg-[#b8005a] transition-colors">
-          Browse Suppliers
+          {t('cart.browseSuppliers')}
         </Link>
       </div>
     );
@@ -60,7 +62,7 @@ export default function Cart() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-xl font-bold text-gray-900 mb-5">Your Requisition Basket</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-5">{t('cart.title')}</h1>
 
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Items */}
@@ -101,12 +103,12 @@ export default function Cart() {
         {/* Booking Summary */}
         <div className="lg:w-80 shrink-0 space-y-4">
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Booking Details</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">{t('cart.bookingDetails')}</h3>
 
             <div className="space-y-3">
               <div>
                 <label className="text-xs font-medium text-gray-500 flex items-center gap-1 mb-1">
-                  <Calendar size={11} /> Delivery Date
+                  <Calendar size={11} /> {t('cart.deliveryDate')}
                 </label>
                 <input
                   type="date"
@@ -119,26 +121,26 @@ export default function Cart() {
 
               <div>
                 <label className="text-xs font-medium text-gray-500 flex items-center gap-1 mb-1">
-                  <MapPin size={11} /> Delivery Address
+                  <MapPin size={11} /> {t('cart.deliveryAddress')}
                 </label>
                 <textarea
                   rows={2}
                   value={deliveryAddress}
                   onChange={e => setDeliveryAddress(e.target.value)}
-                  placeholder="Factory address..."
+                  placeholder={t('cart.addressPlaceholder')}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#e2006a]/30 focus:border-[#e2006a] resize-none"
                 />
               </div>
 
               <div>
                 <label className="text-xs font-medium text-gray-500 flex items-center gap-1 mb-1">
-                  <FileText size={11} /> Notes (optional)
+                  <FileText size={11} /> {t('cart.notes')}
                 </label>
                 <textarea
                   rows={2}
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="Colour specs, quality notes..."
+                  placeholder={t('cart.notesPlaceholder')}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#e2006a]/30 focus:border-[#e2006a] resize-none"
                 />
               </div>
@@ -154,7 +156,7 @@ export default function Cart() {
                 </div>
               ))}
               <div className="border-t border-gray-100 pt-2 flex justify-between font-bold text-gray-900">
-                <span>Total</span>
+                <span>{t('cart.total')}</span>
                 <span>৳{total.toLocaleString()}</span>
               </div>
             </div>
@@ -166,7 +168,7 @@ export default function Cart() {
               disabled={loading}
               className="w-full mt-4 bg-[#e2006a] text-white font-semibold py-2.5 rounded-full hover:bg-[#b8005a] transition-colors disabled:opacity-60"
             >
-              {loading ? 'Placing Booking...' : 'Confirm Booking'}
+              {loading ? t('cart.placingBooking') : t('cart.confirmBooking')}
             </button>
           </div>
         </div>

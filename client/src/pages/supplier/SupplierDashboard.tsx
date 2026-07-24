@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import type { Booking, Material, BookingStatus } from '../../types';
 import { format } from 'date-fns';
 import api from '../../lib/api';
 
-const STATUS_CONFIG: Record<BookingStatus, { label: string; next?: BookingStatus; nextLabel?: string; color: string }> = {
-  pending: { label: 'Pending', next: 'confirmed', nextLabel: 'Confirm', color: 'bg-yellow-100 text-yellow-700' },
-  confirmed: { label: 'Confirmed', next: 'processing', nextLabel: 'Start Processing', color: 'bg-blue-100 text-blue-700' },
-  processing: { label: 'Processing', next: 'dispatched', nextLabel: 'Mark Dispatched', color: 'bg-purple-100 text-purple-700' },
-  dispatched: { label: 'Dispatched', next: 'delivered', nextLabel: 'Mark Delivered', color: 'bg-orange-100 text-orange-700' },
-  delivered: { label: 'Delivered', color: 'bg-green-100 text-green-700' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-600' },
+const STATUS_CONFIG: Record<BookingStatus, { next?: BookingStatus; color: string }> = {
+  pending: { next: 'confirmed', color: 'bg-yellow-100 text-yellow-700' },
+  confirmed: { next: 'processing', color: 'bg-blue-100 text-blue-700' },
+  processing: { next: 'dispatched', color: 'bg-purple-100 text-purple-700' },
+  dispatched: { next: 'delivered', color: 'bg-orange-100 text-orange-700' },
+  delivered: { color: 'bg-green-100 text-green-700' },
+  cancelled: { color: 'bg-red-100 text-red-600' },
 };
 
 export default function SupplierDashboard() {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const [, setSupplierInfo] = useState<any>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -59,10 +61,10 @@ export default function SupplierDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'New Orders', value: pending.length, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-          { label: 'Active Orders', value: active.length, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Materials Listed', value: materials.length, color: 'text-[#e2006a]', bg: 'bg-pink-50' },
-          { label: 'Total Revenue', value: `৳${bookings.filter(b => b.status === 'delivered').reduce((s, b) => s + b.total_amount, 0).toLocaleString()}`, color: 'text-green-600', bg: 'bg-green-50' },
+          { label: t('supplierDash.newOrders'), value: pending.length, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+          { label: t('supplierDash.activeOrders'), value: active.length, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: t('supplierDash.materialsListed'), value: materials.length, color: 'text-[#e2006a]', bg: 'bg-pink-50' },
+          { label: t('supplierDash.totalRevenue'), value: `৳${bookings.filter(b => b.status === 'delivered').reduce((s, b) => s + b.total_amount, 0).toLocaleString()}`, color: 'text-green-600', bg: 'bg-green-50' },
         ].map(s => (
           <div key={s.label} className={`${s.bg} rounded-xl p-4`}>
             <p className="text-xs text-gray-500 mb-1">{s.label}</p>
@@ -73,12 +75,12 @@ export default function SupplierDashboard() {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-5">
-        {(['orders', 'inventory'] as const).map(t => (
-          <button key={t} onClick={() => setActiveTab(t)}
+        {(['orders', 'inventory'] as const).map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all capitalize ${
-              activeTab === t ? 'bg-[#e2006a] text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+              activeTab === tab ? 'bg-[#e2006a] text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
             }`}>
-            {t === 'orders' ? 'Incoming Orders' : 'Inventory'}
+            {tab === 'orders' ? t('supplierDash.incomingOrders') : t('supplierDash.inventory')}
           </button>
         ))}
       </div>
@@ -90,7 +92,7 @@ export default function SupplierDashboard() {
           ) : bookings.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
               <p className="text-3xl mb-2">📬</p>
-              <p>No orders yet</p>
+              <p>{t('supplierDash.noOrders')}</p>
             </div>
           ) : (
             bookings.map(booking => {
@@ -100,12 +102,12 @@ export default function SupplierDashboard() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.color}`}>{cfg.label}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.color}`}>{t(`status.${booking.status}`)}</span>
                         <span className="text-xs text-gray-400">#{booking.id.slice(0, 8)}</span>
                       </div>
                       <p className="font-semibold text-sm text-gray-900">{(booking.buyer as any)?.company_name || (booking.buyer as any)?.full_name}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        Delivery: {format(new Date(booking.delivery_date), 'dd MMM yyyy')} · {booking.items?.length} item(s)
+                        {t('supplierDash.delivery', { date: format(new Date(booking.delivery_date), 'dd MMM yyyy'), count: booking.items?.length ?? 0 })}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">{booking.delivery_address}</p>
                     </div>
@@ -116,7 +118,7 @@ export default function SupplierDashboard() {
                           onClick={() => advanceStatus(booking.id, cfg.next!)}
                           className="text-xs bg-[#e2006a] text-white px-3 py-1.5 rounded-full hover:bg-[#b8005a] transition-colors"
                         >
-                          {cfg.nextLabel}
+                          {t(`status.next.${cfg.next}`)}
                         </button>
                       )}
                     </div>
@@ -135,7 +137,7 @@ export default function SupplierDashboard() {
                 <p className="text-xs text-gray-400">{m.unit} · ৳{m.price_per_unit.toLocaleString()}/unit · Lead: {m.lead_time_days}d</p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">Stock:</span>
+                <span className="text-xs text-gray-500">{t('supplierDash.stock')}</span>
                 <input
                   type="number"
                   defaultValue={m.stock_available}
@@ -143,7 +145,7 @@ export default function SupplierDashboard() {
                   className="w-20 border border-gray-200 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:border-[#e2006a]"
                 />
                 <span className={`text-xs px-2 py-0.5 rounded-full ${m.is_active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
-                  {m.is_active ? 'Active' : 'Inactive'}
+                  {m.is_active ? t('supplierDash.active') : t('supplierDash.inactive')}
                 </span>
               </div>
             </div>

@@ -5,18 +5,20 @@ import { supabase } from '../lib/supabase';
 import type { Supplier, Material, MaterialCategory } from '../types';
 import MaterialCard from '../components/ui/MaterialCard';
 import Badge from '../components/ui/Badge';
+import { useLanguage } from '../context/LanguageContext';
 
-const CATEGORY_TABS: { value: 'all' | MaterialCategory; label: string }[] = [
-  { value: 'all', label: 'All Materials' },
-  { value: 'fabric_natural', label: 'Natural Fabrics' },
-  { value: 'fabric_synthetic', label: 'Synthetic Fabrics' },
-  { value: 'fabric_woven', label: 'Woven Fabrics' },
-  { value: 'thread', label: 'Threads' },
-  { value: 'accessories', label: 'Accessories' },
+const CATEGORY_TABS: { value: 'all' | MaterialCategory }[] = [
+  { value: 'all' },
+  { value: 'fabric_natural' },
+  { value: 'fabric_synthetic' },
+  { value: 'fabric_woven' },
+  { value: 'thread' },
+  { value: 'accessories' },
 ];
 
 export default function SupplierProfile() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLanguage();
   const [supplier, setSupplier] = useState<Supplier | null>(null);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [activeCategory, setActiveCategory] = useState<'all' | MaterialCategory>('all');
@@ -49,7 +51,7 @@ export default function SupplierProfile() {
     );
   }
 
-  if (!supplier) return <div className="text-center py-16 text-gray-400">Supplier not found.</div>;
+  if (!supplier) return <div className="text-center py-16 text-gray-400">{t('profile.notFound')}</div>;
 
   return (
     <div>
@@ -68,7 +70,7 @@ export default function SupplierProfile() {
             <span className="flex items-center gap-1"><MapPin size={12} />{supplier.location}</span>
             <span className="flex items-center gap-1">
               <Star size={12} className="fill-yellow-400 text-yellow-400" />
-              {supplier.rating.toFixed(1)} ({supplier.total_reviews} reviews)
+              {supplier.rating.toFixed(1)} {t('profile.reviews', { count: supplier.total_reviews })}
             </span>
           </div>
         </div>
@@ -78,7 +80,7 @@ export default function SupplierProfile() {
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-5 flex flex-wrap gap-4 items-center justify-between">
         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
           {supplier.capacity_per_month && (
-            <span className="flex items-center gap-1.5"><Package size={14} className="text-[#e2006a]" />Capacity: {supplier.capacity_per_month}</span>
+            <span className="flex items-center gap-1.5"><Package size={14} className="text-[#e2006a]" />{t('profile.capacity', { value: supplier.capacity_per_month })}</span>
           )}
           {supplier.description && (
             <p className="text-gray-500 text-sm">{supplier.description}</p>
@@ -103,14 +105,14 @@ export default function SupplierProfile() {
                 : 'border-gray-200 text-gray-600 hover:border-[#e2006a] hover:text-[#e2006a]'
             }`}
           >
-            {tab.label}
+            {t(`profile.category.${tab.value}`)}
           </button>
         ))}
       </div>
 
       {/* Materials Grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">No materials in this category.</div>
+        <div className="text-center py-12 text-gray-400">{t('profile.noMaterials')}</div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map(m => <MaterialCard key={m.id} material={m} />)}

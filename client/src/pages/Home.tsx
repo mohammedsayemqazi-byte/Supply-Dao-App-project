@@ -6,20 +6,25 @@ import type { Supplier } from '../types';
 import SupplierCard from '../components/ui/SupplierCard';
 import { useAuth } from '../context/AuthContext';
 import { useDeliveryArea } from '../context/DeliveryAreaContext';
+import { useLanguage } from '../context/LanguageContext';
 
+// `term` is the fixed English keyword used to search material names in the
+// database (which is only stored in English); `key` picks the translated
+// display label so the chip text can change language without breaking search.
 const MATERIAL_FILTERS = [
-  { label: 'Cotton', emoji: '🌿' },
-  { label: 'Silk', emoji: '✨' },
-  { label: 'Polyester', emoji: '🔵' },
-  { label: 'Nylon', emoji: '🟣' },
-  { label: 'Threads', emoji: '🧵' },
-  { label: 'Buttons', emoji: '🔘' },
-  { label: 'Zippers', emoji: '🤐' },
-];
+  { key: 'Cotton', term: 'Cotton', emoji: '🌿' },
+  { key: 'Silk', term: 'Silk', emoji: '✨' },
+  { key: 'Polyester', term: 'Polyester', emoji: '🔵' },
+  { key: 'Nylon', term: 'Nylon', emoji: '🟣' },
+  { key: 'Threads', term: 'Thread', emoji: '🧵' },
+  { key: 'Buttons', term: 'Buttons', emoji: '🔘' },
+  { key: 'Zippers', term: 'Zippers', emoji: '🤐' },
+] as const;
 
 export default function Home() {
   const { profile } = useAuth();
   const { area } = useDeliveryArea();
+  const { t } = useLanguage();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [featured, setFeatured] = useState<Supplier[]>([]);
   const [search, setSearch] = useState('');
@@ -54,10 +59,12 @@ export default function Home() {
 
   const greeting = () => {
     const h = new Date().getHours();
-    if (h < 12) return 'Good Morning';
-    if (h < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (h < 12) return t('home.greeting.morning');
+    if (h < 17) return t('home.greeting.afternoon');
+    return t('home.greeting.evening');
   };
+
+  const areaLabel = area ? t(`area.${area}`) : null;
 
   return (
     <div>
@@ -67,14 +74,14 @@ export default function Home() {
           <h1 className="text-3xl font-bold text-white mb-1">
             {greeting()}{profile ? `, ${profile.full_name.split(' ')[0]}` : ''}! 👋
           </h1>
-          <p className="text-pink-100 mb-5">What raw materials are you sourcing today?</p>
+          <p className="text-pink-100 mb-5">{t('home.subtitle')}</p>
 
           {/* Search */}
           <div className="bg-white rounded-full flex items-center px-4 py-2.5 gap-2 shadow-lg max-w-lg">
             <Search size={18} className="text-gray-400 shrink-0" />
             <input
               type="text"
-              placeholder="Search suppliers, materials, fabrics..."
+              placeholder={t('home.searchPlaceholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="flex-1 outline-none text-sm text-gray-700 bg-transparent"
@@ -88,12 +95,12 @@ export default function Home() {
             </button>
             {MATERIAL_FILTERS.map(f => (
               <button
-                key={f.label}
-                onClick={() => setSearch(f.label)}
+                key={f.key}
+                onClick={() => setSearch(f.term)}
                 className="bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1 rounded-full transition-colors flex items-center gap-1"
               >
                 <span>{f.emoji}</span>
-                {f.label}
+                {t(`home.filter.${f.key}`)}
               </button>
             ))}
           </div>
@@ -109,11 +116,11 @@ export default function Home() {
       {/* Promo Banner */}
       <div className="bg-pink-50 border border-pink-100 rounded-xl px-5 py-4 mb-6 flex items-center justify-between">
         <div>
-          <p className="font-bold text-gray-900 text-sm">🎉 Book in advance & save 15%</p>
-          <p className="text-xs text-gray-500 mt-0.5">On orders above ৳50,000 · Bulk discount applies</p>
+          <p className="font-bold text-gray-900 text-sm">{t('home.promo.title')}</p>
+          <p className="text-xs text-gray-500 mt-0.5">{t('home.promo.subtitle')}</p>
         </div>
         <Link to="/suppliers" className="bg-[#e2006a] text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-[#b8005a] transition-colors shrink-0">
-          Book Now
+          {t('home.promo.bookNow')}
         </Link>
       </div>
 
@@ -121,9 +128,9 @@ export default function Home() {
       {featured.length > 0 && !search && !area && (
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-gray-900 text-lg">Top Rated Suppliers</h2>
+            <h2 className="font-bold text-gray-900 text-lg">{t('home.topRated')}</h2>
             <Link to="/suppliers" className="text-sm text-[#e2006a] flex items-center gap-0.5 hover:underline">
-              See all <ChevronRight size={14} />
+              {t('home.seeAll')} <ChevronRight size={14} />
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -136,9 +143,13 @@ export default function Home() {
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-bold text-gray-900 text-lg">
-            {search ? `Results for "${search}"` : area ? `Suppliers in ${area}` : 'All Suppliers'}
+            {search
+              ? t('home.resultsFor', { query: search })
+              : areaLabel
+                ? t('home.suppliersIn', { area: areaLabel })
+                : t('home.allSuppliers')}
           </h2>
-          <span className="text-sm text-gray-400">{filtered.length} suppliers</span>
+          <span className="text-sm text-gray-400">{t('home.suppliersCount', { count: filtered.length })}</span>
         </div>
 
         {loading ? (
@@ -152,13 +163,13 @@ export default function Home() {
             <p className="text-4xl mb-2">🔍</p>
             <p className="font-medium">
               {search
-                ? `No suppliers found for "${search}"`
-                : area
-                  ? `No suppliers found in ${area}`
-                  : 'No suppliers found'}
+                ? t('home.noSuppliersFor', { query: search })
+                : areaLabel
+                  ? t('home.noSuppliersIn', { area: areaLabel })
+                  : t('home.noSuppliersFound')}
             </p>
             {search && (
-              <button onClick={() => setSearch('')} className="mt-2 text-sm text-[#e2006a] hover:underline">Clear search</button>
+              <button onClick={() => setSearch('')} className="mt-2 text-sm text-[#e2006a] hover:underline">{t('home.clearSearch')}</button>
             )}
           </div>
         ) : (
